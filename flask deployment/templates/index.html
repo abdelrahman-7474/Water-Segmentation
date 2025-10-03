@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Satellite Band Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px 30px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    h2, h3 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    form, select, button {
+      margin: 10px 0;
+    }
+
+    input[type="file"] {
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: #f9f9f9;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #f9f9f9;
+    }
+
+    .image-box {
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #fafafa;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .image-box img {
+      max-width: 100%;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .col {
+      flex: 1;
+      min-width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Satellite Band Viewer</h2>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" id="fileInput" name="file" accept=".tif,.tiff" />
+      <button type="submit">Upload</button>
+    </form>
+
+    <h3>Choose Band to Display</h3>
+    <select id="bandSelect">
+      <option value="0">Band 1</option>
+      <option value="1">Band 2</option>
+      <option value="2">Band 3</option>
+      <option value="3">Band 4</option>
+      <option value="4">Band 5</option>
+      <option value="5">Band 6</option>
+      <option value="6">Band 7</option>
+      <option value="7">Band 8</option>
+      <option value="8">Band 9</option>
+      <option value="9">Band 10</option>
+      <option value="10">Band 11</option>
+      <option value="11">Band 12</option>
+    </select>
+
+    <div class="row">
+      <div class="col">
+        <h3>Selected Band</h3>
+        <div class="image-box">
+          <img id="bandImage" width="400" />
+        </div>
+      </div>
+
+      <div class="col">
+        <button id="predictBtn">Run Prediction</button>
+        <h3>Predicted Mask</h3>
+        <div class="image-box">
+          <img id="maskImage" width="400" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let uploadedFile = null;
+
+    document.getElementById("uploadForm").onsubmit = (e) => {
+      e.preventDefault();
+      uploadedFile = document.getElementById("fileInput").files[0];
+      alert(" File uploaded! Now select a band or run prediction.");
+    };
+
+    // Band selection
+    document.getElementById("bandSelect").onchange = async (e) => {
+      if (!uploadedFile) {
+        alert(" Please upload an image first!");
+        return;
+      }
+
+      const band = e.target.value;
+      const formData = new FormData();
+      formData.append("file", uploadedFile);
+
+      const response = await fetch(`/band/${band}`, {
+        method: "POST",
+        body: formData
+      });
+
+      const blob = await response.blob();
+      document.getElementById("bandImage").src = URL.createObjectURL(blob);
+    };
+
+    // Prediction
+    document.getElementById("predictBtn").onclick = async (e) => {
+      e.preventDefault();
+      if (!uploadedFile) {
+        alert(" Please upload an image first!");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", uploadedFile);
+
+      const response = await fetch("/predict", {
+        method: "POST",
+        body: formData
+      });
+
+      const blob = await response.blob();
+      document.getElementById("maskImage").src = URL.createObjectURL(blob);
+    };
+  </script>
+</body>
+</html>
